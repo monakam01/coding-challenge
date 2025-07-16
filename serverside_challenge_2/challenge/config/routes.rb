@@ -3,4 +3,9 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   # root "articles#index"
+  namespace :api do
+    namespace :v1 do
+      post "simulate_all_plan", to: "plan#simulate_all"
+    end
+  end
 end
