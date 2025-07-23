@@ -1,0 +1,4 @@
+id,provider_name,rounding_decimal_points
+1,東京電力エナジーパートナー,off
+2,東京ガス,off
+3,Looopでんき,round

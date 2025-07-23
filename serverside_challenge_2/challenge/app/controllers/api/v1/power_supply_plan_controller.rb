@@ -23,9 +23,9 @@ class Api::V1::PowerSupplyPlanController < ApplicationController
       end
       
       result << {
-        provider_name: plan.provider_name.to_s,
+        provider_name: Provider.find(plan.provider_id.to_s).provider_name,
         plan_name: plan.plan_name.to_s,
-        price: (basic_charge_price + meter_charge_price).round
+        price: round_expense((basic_charge_price + meter_charge_price), plan)
       }
     end
     
@@ -33,6 +33,15 @@ class Api::V1::PowerSupplyPlanController < ApplicationController
   end
   
   private
+
+def round_expense(price, plan)
+  round_method = Provider.find(plan.provider_id.to_s).rounding_decimal_points
+  if round_method == "round"
+    return price.round(0)
+  elsif round_method == "off"
+    return price.floor(0)
+  end
+end
 
   def basic_charge(plan_id, amp)
     basic_charge_record = BasicCharge.where(plan_id: plan_id, amp: amp)
