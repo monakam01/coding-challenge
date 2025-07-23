@@ -2,8 +2,8 @@ class Api::V1::PowerSupplyPlanController < ApplicationController
   def simulate_all
     amp = params[:amp]
     meter_rate = params[:meter_rate]
-    validate_result = validate_request(amp, meter_rate)
-    return render json: validate_result if validate_result.present?
+    bad_request_result = build_bad_request_resut(amp, meter_rate)
+    return render json: bad_request_result, status: 400 if bad_request_result.present?
     
     amp = amp.to_i
     meter_rate = meter_rate.to_i
@@ -69,12 +69,12 @@ class Api::V1::PowerSupplyPlanController < ApplicationController
     end
   end
 
-  def validate_request(amp, meter_rate)
+  def build_bad_request_resut(amp, meter_rate)
     message = ""
     if amp.blank? 
       message = message + "リクエストパラメータ 'amp' が不足しています。\n" 
     else
-      message = message + "リクエストパラメータ 'amp' の値が不正です。0以上の整数を指定してください。\n" unless numeric?(amp) && amp.to_i >= 0
+      message = message + "リクエストパラメータ 'amp' の値が不正です。'10 / 15 / 20 / 30 / 40 / 50 / 60' のいずれかの値を指定してください。\n" unless valid_amp?(amp)
     end
     if meter_rate.blank?
       message = message + "リクエストパラメータ 'meter_rate' が不足しています。\n"
@@ -94,6 +94,10 @@ class Api::V1::PowerSupplyPlanController < ApplicationController
     true
   rescue ArgumentError, TypeError
     false
+  end
+
+  def valid_amp?(amp)
+    [10, 15, 20, 30, 40, 50, 60].include?(amp.to_i)
   end
 
   def errro_result(result)
