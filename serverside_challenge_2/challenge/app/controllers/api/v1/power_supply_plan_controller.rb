@@ -9,7 +9,7 @@ class Api::V1::PowerSupplyPlanController < ApplicationController
     meter_rate = meter_rate.to_i
     
     # 各プランの基本料金を取得
-    plans = PowerSupplyPlan.all
+    plans = PowerSupplyPlanCsv.all
     result = []
     for plan in plans do
       id = plan.id
@@ -23,7 +23,7 @@ class Api::V1::PowerSupplyPlanController < ApplicationController
       end
       
       result << {
-        provider_name: Provider.find(plan.provider_id.to_s).provider_name,
+        provider_name: ProviderCsv.find(plan.provider_id.to_s).provider_name,
         plan_name: plan.plan_name.to_s,
         price: round_expense((basic_charge_price + meter_charge_price), plan)
       }
@@ -35,7 +35,7 @@ class Api::V1::PowerSupplyPlanController < ApplicationController
   private
 
 def round_expense(price, plan)
-  round_method = Provider.find(plan.provider_id.to_s).rounding_decimal_points
+  round_method = ProviderCsv.find(plan.provider_id.to_s).rounding_amount_method
   if round_method == "round"
     return price.round(0)
   elsif round_method == "off"
@@ -44,7 +44,7 @@ def round_expense(price, plan)
 end
 
   def basic_charge(plan_id, amp)
-    basic_charge_record = BasicCharge.where(plan_id: plan_id, amp: amp)
+    basic_charge_record = BasicChargeCsv.where(plan_id: plan_id, amp: amp)
     if basic_charge_record.count == 1
       price = basic_charge_record.first.price
     elsif basic_charge_record.count == 0
@@ -55,7 +55,7 @@ end
   end
 
   def meter_charge(plan_id, meter_rate)
-    plan = MeterRateCharge.where(
+    plan = MeterRateChargeCsv.where(
                                   plan_id: plan_id,
                                   min_meter_rate: ..meter_rate, 
                                   max_meter_rate: meter_rate..
@@ -63,7 +63,7 @@ end
     logger.debug "plan.bank?: #{plan.blank?}"
 
     if plan.blank?
-      maximum_plan = MeterRateCharge.where(
+      maximum_plan = MeterRateChargeCsv.where(
                                             plan_id: plan_id, 
                                             max_meter_rate: nil
                                           )
