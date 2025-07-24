@@ -1,6 +1,3 @@
-require 'csv' # CSVファイルを扱うためにCSVライブラリをロード
-
-class Provider < ActiveHash::Base
-  include ActiveHash::Associations
-  self.data = CSV.read('config/data/providers.csv', headers: true).map(&:to_hash)
+class Provider < ApplicationRecord
+  has_many :power_supply_plans
 end
