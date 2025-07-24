@@ -39,7 +39,8 @@ seed_data = [
                       {amp: 20, price: 572.00},
                       {amp: 30, price: 858.00},
                       {amp: 40, price: 1144.00},
-                      {amp: 50, price: 1430.00}
+                      {amp: 50, price: 1430.00},
+                      {amp: 60, price: 1716.00}
                     ]
   },
   {index: 2, data: [
