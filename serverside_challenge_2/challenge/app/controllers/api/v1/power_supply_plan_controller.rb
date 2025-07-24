@@ -9,23 +9,19 @@ class Api::V1::PowerSupplyPlanController < ApplicationController
     meter_rate = meter_rate.to_i
     
     # 各プランの基本料金を取得
-    plans = PowerSupplyPlanCsv.all
+    plans = PowerSupplyPlan.all
     result = []
     for plan in plans do
-      id = plan.id
-      basic_charge_price = basic_charge(id, amp)
-      if basic_charge_price == -1
-        next
-      end
-      meter_charge_price = meter_charge(id, meter_rate)
-      if meter_charge_price == -1
-        next
-      end
+      basic_charge = plan.basic_charges.where(amp: amp)
+      next if basic_charge.blank?
+
+      meter_charge_price = meter_charge(plan, meter_rate)
+      next if meter_charge_price < 0
       
       result << {
-        provider_name: ProviderCsv.find(plan.provider_id.to_s).provider_name,
+        provider_name: plan.provider.provider_name,
         plan_name: plan.plan_name.to_s,
-        price: round_expense((basic_charge_price + meter_charge_price), plan)
+        price: round_expense((basic_charge.first.price.to_f + meter_charge_price), plan)
       }
     end
     
@@ -34,47 +30,35 @@ class Api::V1::PowerSupplyPlanController < ApplicationController
   
   private
 
-def round_expense(price, plan)
-  round_method = ProviderCsv.find(plan.provider_id.to_s).rounding_amount_method
-  if round_method == "round"
-    return price.round(0)
-  elsif round_method == "off"
-    return price.floor(0)
-  end
-end
+  def round_expense(price, plan)
+    round_method = plan.provider.rounding_amount_method
+    if round_method == "round"
 
-  def basic_charge(plan_id, amp)
-    basic_charge_record = BasicChargeCsv.where(plan_id: plan_id, amp: amp)
-    if basic_charge_record.count == 1
-      price = basic_charge_record.first.price
-    elsif basic_charge_record.count == 0
-      return -1
+      return price.round(0).to_i
+    elsif round_method == "off"
+      return price.floor(0).to_i
     end
-
-    return price
   end
 
-  def meter_charge(plan_id, meter_rate)
-    plan = MeterRateChargeCsv.where(
-                                  plan_id: plan_id,
-                                  min_meter_rate: ..meter_rate, 
-                                  max_meter_rate: meter_rate..
-                                )
-    logger.debug "plan.bank?: #{plan.blank?}"
+  def meter_charge(plan, meter_rate)
+    result_plan = plan.meter_rate_charges.where(
+                                                  min_meter_rate: ..meter_rate, 
+                                                  max_meter_rate: meter_rate..
+                                               )
 
-    if plan.blank?
-      maximum_plan = MeterRateChargeCsv.where(
-                                            plan_id: plan_id, 
-                                            max_meter_rate: nil
-                                          )
-      if maximum_plan.first.min_meter_rate <= meter_rate
-        return maximum_plan.first.price * meter_rate.to_f
-      else
+    if result_plan.blank?
+      maximum_plan = plan.meter_rate_charges.where(
+                                                    min_meter_rate: ..meter_rate, 
+                                                    max_meter_rate: nil
+                                                  )
+      if maximum_plan.blank?
         return -1
+      else
+        maximum_plan.first.price * meter_rate.to_f
       end
     else
 
-      return plan.first.price * meter_rate.to_f
+      return result_plan.first.price * meter_rate.to_f
     end
   end
 
