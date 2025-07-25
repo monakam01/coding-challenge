@@ -41,19 +41,41 @@ module Api
       end
 
       def meter_charge(plan, meter_rate)
-        result_plan = plan.meter_rate_charges.where(
-          min_meter_rate: ..meter_rate,
-          max_meter_rate: meter_rate..
-        )
-        return result_plan.first.price * meter_rate.to_f unless result_plan.blank?
+        price = 0
+        plan.meter_rate_charges.each do |step|
+          price += calculate_if_step_applicable(step, meter_rate)
+        end
+        price
+      end
 
-        maximum_plan = plan.meter_rate_charges.where(
-          min_meter_rate: ..meter_rate,
-          max_meter_rate: nil
-        )
-        return -1 if maximum_plan.blank?
+      def calculate_if_step_applicable(step, meter_rate)
+        max_rate = step.max_meter_rate
+        min_rate = step.min_meter_rate
+        price = step.price
+        # 使用量がステップ請求額に満たない場合0を返す
+        return 0 if meter_rate < min_rate
+        if max_rate.nil? && min_rate <= meter_rate
+          # 最大料金ステップの計算
+          return (meter_rate - min_rate + 1) * price
+        end
 
-        maximum_plan.first.price * meter_rate.to_f
+        if min_rate.zero?
+          # 最小料金ステップの計算
+          if max_rate <= meter_rate
+            # 該当ステップの満額請求計算
+            max_rate * price
+          else
+            # 該当ステップの使用量までを計算
+            meter_rate * price
+          end
+        elsif (min_rate..max_rate).include?(meter_rate)
+          # 中間料金ステップの計算
+          # 該当ステップの使用量までを計算
+          (meter_rate - min_rate + 1) * price
+        else
+          # 該当ステップの満額請求計算
+          (max_rate - min_rate + 1) * price
+        end
       end
 
       def build_200_message(amp, meter_rate)
