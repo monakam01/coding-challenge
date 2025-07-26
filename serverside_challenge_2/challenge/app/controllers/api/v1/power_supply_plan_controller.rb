@@ -21,8 +21,8 @@ module Api
           next if meter_charge_price.negative?
 
           result << {
-            provider_name: plan.provider.provider_name,
-            plan_name: plan.plan_name.to_s,
+            provider_name: plan.provider.name,
+            plan_name: plan.name.to_s,
             price: (basic_charge.first.price.to_f + meter_charge_price).floor(0).to_i
           }
         end

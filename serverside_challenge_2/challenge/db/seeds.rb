@@ -10,9 +10,9 @@ p '==================== provider create ===================='
 
 Provider.create! (
   [
-    { provider_name: "東京電力エナジーパートナー" },
-    { provider_name: "東京ガス" },
-    { provider_name: "Looopでんき" }
+    { name: "東京電力エナジーパートナー" },
+    { name: "東京ガス" },
+    { name: "Looopでんき" }
   ]
 )
 
@@ -21,14 +21,14 @@ p '==================== power_supply_plan create ===================='
 provider = Provider.find(1)
 plans = provider.power_supply_plans.new(
   [
-    {plan_name: "従量電灯B"},
-    {plan_name: "スタンダードS"}
+    {name: "従量電灯B"},
+    {name: "スタンダードS"}
   ]
 )
 plans.each { |plan| plan.save }
 
-provider = Provider.find(2).power_supply_plans.create!(plan_name: "ずっとも電気1")
-provider = Provider.find(3).power_supply_plans.create!(plan_name: "おうちプラン")
+provider = Provider.find(2).power_supply_plans.create!(name: "ずっとも電気1")
+provider = Provider.find(3).power_supply_plans.create!(name: "おうちプラン")
 
 p '==================== basic_charge create ===================='
 
