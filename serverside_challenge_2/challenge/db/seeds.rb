@@ -10,9 +10,9 @@ p '==================== provider create ===================='
 
 Provider.create! (
   [
-    { provider_name: "東京電力エナジーパートナー", rounding_amount_method: "off" },
-    { provider_name: "東京ガス", rounding_amount_method: "off" },
-    { provider_name: "Looopでんき", rounding_amount_method: "round" }
+    { provider_name: "東京電力エナジーパートナー" },
+    { provider_name: "東京ガス" },
+    { provider_name: "Looopでんき" }
   ]
 )
 

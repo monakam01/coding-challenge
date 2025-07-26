@@ -23,22 +23,13 @@ module Api
           result << {
             provider_name: plan.provider.provider_name,
             plan_name: plan.plan_name.to_s,
-            price: round_expense(basic_charge.first.price.to_f + meter_charge_price, plan)
+            price: (basic_charge.first.price.to_f + meter_charge_price).floor(0).to_i
           }
         end
         render json: result
       end
 
       private
-
-      def round_expense(price, plan)
-        round_method = plan.provider.rounding_amount_method
-        if round_method == 'round'
-          price.round(0).to_i
-        elsif round_method == 'off'
-          price.floor(0).to_i
-        end
-      end
 
       def meter_charge(plan, meter_rate)
         price = 0
@@ -52,6 +43,10 @@ module Api
         max_rate = step.max_meter_rate
         min_rate = step.min_meter_rate
         price = step.price
+
+        # 最小ステップ かつ 最大ステップ
+        return meter_rate * price if max_rate.nil?
+
         # 使用量がステップ請求額に満たない場合0を返す
         return 0 if meter_rate < min_rate
         if max_rate.nil? && min_rate <= meter_rate
