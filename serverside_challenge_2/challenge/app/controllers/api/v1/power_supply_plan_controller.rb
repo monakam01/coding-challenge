@@ -44,8 +44,9 @@ module Api
         min_rate = step.min_meter_rate
         price = step.price
 
-        # 最小ステップ かつ 最大ステップ
-        return meter_rate * price if max_rate.nil?
+
+        # 最小ステップ かつ 最大ステップ(従量料金設定が１ステップのみのケース)
+        return meter_rate * price if min_rate.zero? && max_rate.nil?
 
         # 使用量がステップ請求額に満たない場合0を返す
         return 0 if meter_rate < min_rate
