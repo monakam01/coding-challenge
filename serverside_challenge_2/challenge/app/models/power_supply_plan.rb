@@ -11,7 +11,7 @@ class PowerSupplyPlan < ApplicationRecord
 
     basic_charge_amount = basic_charge_record.first.price.to_f
     meter_rate_charge_amount = calculate_meter_rate_charge(meter_rate)
-    basic_charge_amount + meter_rate_charge_amount
+    (basic_charge_amount + meter_rate_charge_amount).floor(0).to_i
   end
 
   def calculate_meter_rate_charge(meter_rate)
