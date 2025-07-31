@@ -5,7 +5,7 @@ Rails.application.routes.draw do
   # root "articles#index"
   namespace :api do
     namespace :v1 do
-      post "simulate_all_plan", to: "power_supply_plan#simulate_all"
+      get "simulate_all_plan", to: "power_supply_plan#simulate_all"
     end
   end
 end
