@@ -18,7 +18,7 @@ class PowerSupplyPlanSimulator
     end
 
     result = []
-    PowerSupplyPlan.all.each do |plan|
+    PowerSupplyPlan.includes(:provider, :meter_rate_charges, :basic_charges).each do |plan|
       calculate_result = plan.calculate_total_amount(@amp, @meter_rate)
       next unless calculate_result
 
